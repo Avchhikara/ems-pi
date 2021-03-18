@@ -38,7 +38,7 @@ class USBCamera:
 
     def makeImageDir(self):
         print("[USBCamera] - Create img directory if not exist")
-        if "img" not in listdir("./"):
+        if "img" not in listdir("./static"):
             mkdir(self.pathToSaveImage)
 
     def takePhoto(self, imageName="vehicleImage.png"):
