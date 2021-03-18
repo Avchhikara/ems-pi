@@ -1,0 +1,21 @@
+.body {
+    font-family: monospace, 'Courier New', Courier !important;
+}
+
+.live-feed {
+    position: relative;
+}
+
+.live-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    animation: flickerAnimation .5s infinite;
+}
+
+
+@keyframes flickerAnimation {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
