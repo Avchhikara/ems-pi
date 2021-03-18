@@ -1,12 +1,22 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
+# Making it singleton so to have only one access to the resource.
 
 class ServoMotor:
     pwm = None
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        if ServoMotor.__instance is None:
+            ServoMotor()
+        return ServoMotor.__instance
 
     def __init__(self):
-        pass
+        if ServoMotor.__instance is not None:
+            raise Exception("[ServoMotor] - Instance already created, use getInstance to get the instance")
+        else: ServoMotor.__instance = self
 
     def setAngle(self, angleToSet=90):
         print("[ServoMotor] - Setting up the servo motor")
