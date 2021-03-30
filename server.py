@@ -1,9 +1,9 @@
-from ServoMotor import ServoMotor
-from IRSensor import IRSensor
+from components.ServoMotor import ServoMotor
+from components.IRSensor import IRSensor
 from flask import Flask, render_template, Response
 from multiprocessing import Process
 
-from USBCamera import USBCamera
+from components.USBCamera import USBCamera
 # from SimpleDetector import SimpleDetector
 
 app = Flask(__name__)
@@ -31,7 +31,12 @@ if __name__ == "__main__":
     # simpleDetector = SimpleDetector(usbCamera=USBCamera.getInstance(
     # ), irSensor=IRSensor.getInstance(), servoMotor=ServoMotor.getInstance())
 
-    # p = Process(target=simpleDetector.run)
-    # p.start()
-    # p.join()
+    # p1 = Process(target=simpleDetector.run)
+    # p2 = Process(target=app.run, kwargs={
+    #              "debug": True, "port": 9000, "threaded": True})
+    # # p1.start()
+    # p2.start()
+    # # p1.join()
+    # p2.join()
     app.run(debug=True, port=9000, threaded=True)
+    # print("After app")

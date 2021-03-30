@@ -1,8 +1,10 @@
+from .componentLogger import getDefaultConfigLogger
 import RPi.GPIO as GPIO
 from time import sleep
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(3, GPIO.OUT)
+
 
 # Making it singleton so to have only one access to the resource.
 
@@ -10,6 +12,7 @@ GPIO.setup(3, GPIO.OUT)
 class ServoMotor:
     pwm = GPIO.PWM(3, 50)
     __instance = None
+    logger = None
 
     @staticmethod
     def getInstance():
@@ -18,21 +21,23 @@ class ServoMotor:
         return ServoMotor.__instance
 
     def __init__(self):
+        self.logger = getDefaultConfigLogger(__file__)
         if ServoMotor.__instance is not None:
             raise Exception(
-                "[ServoMotor] - Instance already created, use getInstance to get the instance")
+                "Instance already created, use getInstance to get the instance")
         else:
             ServoMotor.__instance = self
 
     def setAngle(self, angleToSet=90):
-        print("[ServoMotor] - Setting up the servo motor")
+        self.logger.debug("Setting up the servo motor")
 
         self.pwm.start(0)
-        print("[ServoMotor] - Starting rotation of servo motor to angle:", angleToSet)
+        self.logger.debug(
+            "Starting rotation of servo motor to angle: " + str(angleToSet))
         duty = angleToSet / 18 + 2
         GPIO.output(3, True)
         self.pwm.ChangeDutyCycle(duty)
-        print("[ServoMotor] - Rotation complete")
+        self.logger.debug("Rotation complete")
         sleep(1)
         GPIO.output(3, False)
         self.pwm.ChangeDutyCycle(0)
@@ -40,7 +45,7 @@ class ServoMotor:
 
     def __del__(self):
         self.pwm.stop()
-        print("[ServoMotor] - deleting the object")
+        self.logger.debug("deleting the object")
 
 
 if __name__ == "__main__":

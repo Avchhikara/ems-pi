@@ -4,11 +4,15 @@ from time import sleep
 
 # Making this class a singleton since there is only one resource and it should be accessed once.
 
+from .componentLogger import getDefaultConfigLogger
+
 
 class USBCamera:
     camera = None
     pathToSaveImage = "./static/img/"
     __instance = None
+    logger = None
+    cameraIndex = 0
 
     @staticmethod
     def getInstance():
@@ -18,44 +22,58 @@ class USBCamera:
         return USBCamera.__instance
 
     def __init__(self, cameraIndex=0):
+        self.logger = getDefaultConfigLogger(__file__)
         if USBCamera.__instance is not None:
             raise Exception(
                 "This class is already initialized - use getInstance method to get the instance")
         else:
             USBCamera.__instance = self
 
-        self.makeImageDir()
-        self.camera = cv.VideoCapture(cameraIndex)
+        self.cameraIndex = cameraIndex
+
+    def _initializeCamera(self):
+        self.camera = cv.VideoCapture(self.cameraIndex)
         while not self.camera.isOpened():
-            print(
-                "[USBCamera] - Faced error in camera initializing so, trying again after 1 sec")
+            self.logger.debug(
+                "Faced error in camera initializing so, trying again after 1 sec")
             sleep(1)
-            self.camera = cv.VideoCapture(cameraIndex)
+            self.camera = cv.VideoCapture(self.cameraIndex)
         if self.camera.isOpened():
-            print("[USBCamera] - Camera Initialized")
+            self.logger.debug("Camera Initialized")
         else:
-            print("[USBCamera] - Camera is still not open!")
+            self.logger.debug("Camera is still not open!")
+
+    def _releaseCamera(self):
+        self.logger.debug("Releasing camera resource")
+        self.camera.release()
 
     def makeImageDir(self):
-        print("[USBCamera] - Create img directory if not exist")
-        if "img" not in listdir("./static"):
+        self.logger.debug("Create img directory if not exist")
+        if "img" not in listdir("./../static"):
             mkdir(self.pathToSaveImage)
 
     def takePhoto(self, imageName="vehicleImage.png"):
-        print("[USBCamera] - Reading the camera input and capturing a frame")
+        self.logger.debug("Reading the camera input and capturing a frame")
         try:
+            self._initializeCamera()
             ret, photoFrame = self.camera.read()
-            print(
-                f"[USBCamera] - Saving the frame as '{imageName}' in '{self.pathToSaveImage}' folder")
+            self.logger.debug(
+                f"Saving the frame as '{imageName}' in '{self.pathToSaveImage}' folder")
+            imageSavedSuccessfully = False
             if imageName.split(".")[-1] == "png":
-                cv.imwrite(self.pathToSaveImage + imageName, photoFrame)
+                imageSavedSuccessfully = cv.imwrite(
+                    self.pathToSaveImage + imageName, photoFrame)
             else:
-                cv.imwrite(self.pathToSaveImage +
-                           imageName + ".png", photoFrame)
-            print("[USBCamera] - Photo is taken and is saved!")
+                imageSavedSuccessfully = cv.imwrite(self.pathToSaveImage +
+                                                    imageName + ".png", photoFrame)
+            if imageSavedSuccessfully:
+                self.logger.debug("Photo is taken and is saved!")
+            else:
+                self.logger.error("Unable to save image")
+            self._releaseCamera()
             return True, self.pathToSaveImage + imageName
         except Exception as err:
-            print("[USBCamera] - Error: ", err)
+            self.logger.error("Error: ", err)
             return False, ""
 
     def getVideoFeed(self):
@@ -71,8 +89,7 @@ class USBCamera:
                        )
 
     def __del__(self):
-        print("[USBCamera] - Releasing camera resource")
-        self.camera.release()
+        pass
 
 
 if __name__ == "__main__":
