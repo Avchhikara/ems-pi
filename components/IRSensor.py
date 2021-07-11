@@ -31,7 +31,10 @@ class IRSensor:
 
         GPIO.setup(self.sensorPin, GPIO.IN)
 
-    def startLooking(self):
+    def startLooking(self, subscribers=[]):
+        for sbs in subscribers:
+            self.subscribers.append(sbs)
+            
         while True:
             sleep(0.5)
             # Waiting for object detection
@@ -74,7 +77,9 @@ class IRSensor:
 
 if __name__ == "__main__":
     irSensor = IRSensor()
-    irSensor.subscribe(lambda x: print(
-        "Object detected: ", x[0], " , Object moved: ", x[1]))
-    irSensor.startLooking()
+    # irSensor.subscribe(lambda x: print(
+    #     "Object detected: ", x[0], " , Object moved: ", x[1]))
+    def simplePrint(*args):
+        print(args)
+    irSensor.startLooking([simplePrint])
     del irSensor

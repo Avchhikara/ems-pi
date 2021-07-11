@@ -1,5 +1,4 @@
 from multiprocessing import Process, Queue
-import requests
 from time import sleep
 import RPi.GPIO as GPIO
 # import logging
@@ -8,10 +7,10 @@ from utils.loggerConfig import getDefaultConfigLogger
 from components.ServoMotor import ServoMotor
 from components.IRSensor import IRSensor
 from components.USBCamera import USBCamera
+from Centrifuge import Centrifuge
 # from components.USBCameraAsync import USBCameraAsync
 
 GPIO.setmode(GPIO.BOARD)
-
 
 # servoMotor = ServoMotor()
 # irSensor = IRSensor()
@@ -37,6 +36,7 @@ class SimpleDetector:
         self.usbCamera = usbCamera
         self.irSensor = irSensor
         self.servoMotor = servoMotor
+        self.centrifuge = Centrifuge()
 
     def onObjectDetection(self, args):
         objectDetected, objectMoved = args
@@ -45,8 +45,12 @@ class SimpleDetector:
             self.logger.debug("Object is detected, taking photo")
             self.usbCamera.takePhoto(image_name)
             self.logger.debug("Sending photo to Centrifuge")
-            self.logger.debug("Processing the input from centrifuge")
-            self.servoMotor.setAngle(90)
+            authorised = self.centrifuge.upload(
+                "car" + str(self.counter % 2) + ".jpeg")
+
+            if authorised:
+                self.servoMotor.setAngle(90)
+
             self.counter += 1
         elif objectMoved:
             self.logger.debug(
@@ -55,10 +59,11 @@ class SimpleDetector:
             self.servoMotor.setAngle(0)
 
     def run(self):
-        self.irSensor.subscribe(self.onObjectDetection)
-        p = Process(target=self.irSensor.startLooking, args=())
-        p.start()
-        p.join()
+        # self.irSensor.subscribe(self.onObjectDetection)
+        # p = Process(target=self.irSensor.startLooking, args=())
+        # p.start()
+        # p.join()
+        self.irSensor.startLooking([self.onObjectDetection])
 
 
 if __name__ == "__main__":

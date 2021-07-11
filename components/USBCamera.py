@@ -57,8 +57,8 @@ class USBCamera:
         try:
             self._initializeCamera()
             ret, photoFrame = self.camera.read()
-            self.logger.debug(
-                f"Saving the frame as '{imageName}' in '{self.pathToSaveImage}' folder")
+            msg = "Saving the frame as'" + imageName + "' in '" + self.pathToSaveImage + "' folder"
+            self.logger.debug(msg)
             imageSavedSuccessfully = False
             if imageName.split(".")[-1] == "png":
                 imageSavedSuccessfully = cv.imwrite(
