@@ -2,7 +2,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s [%(name)-12s] [%(levelname)-6s] - %(message)s',
-                    datefmt='%m-%d %H:%M')
+                    datefmt='%m-%d-%Y %H:%M:%S')
 
 
 def getDefaultConfigLogger(moduleName="Computer vision based entry management system"):

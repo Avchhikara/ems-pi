@@ -7,6 +7,7 @@ from utils.loggerConfig import getDefaultConfigLogger
 from components.ServoMotor import ServoMotor
 from components.IRSensor import IRSensor
 from components.USBCamera import USBCamera
+from components.LED import LED
 from Centrifuge import Centrifuge
 # from components.USBCameraAsync import USBCameraAsync
 
@@ -37,6 +38,7 @@ class SimpleDetector:
         self.irSensor = irSensor
         self.servoMotor = servoMotor
         self.centrifuge = Centrifuge()
+        self.led = LED()
 
     def onObjectDetection(self, args):
         objectDetected, objectMoved = args
@@ -47,23 +49,29 @@ class SimpleDetector:
             self.logger.debug("Sending photo to Centrifuge")
             authorised = self.centrifuge.upload(
                 "car" + str(self.counter % 2) + ".jpeg")
-
             if authorised:
                 self.servoMotor.setAngle(90)
+            else:
+                self.led.turnOn(False)
 
             self.counter += 1
         elif objectMoved:
+            self.led.turnOff()
             self.logger.debug(
                 "Object seems to have moved so, flank will come down after 2 seconds")
             sleep(2)
             self.servoMotor.setAngle(0)
 
     def run(self):
+        self.logger.debug("Pi detector is initialized")
         # self.irSensor.subscribe(self.onObjectDetection)
         # p = Process(target=self.irSensor.startLooking, args=())
         # p.start()
         # p.join()
         self.irSensor.startLooking([self.onObjectDetection])
+
+    def __del__(self):
+        GPIO.cleanup()
 
 
 if __name__ == "__main__":
